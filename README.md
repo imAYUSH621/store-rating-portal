@@ -1,5 +1,8 @@
 # Store Rating Portal
 
+> 🚀 **Live Production Demo:** [https://store-rating-portal-green.vercel.app](https://store-rating-portal-green.vercel.app)  
+> 📦 **GitHub Repository:** [https://github.com/imAYUSH621/store-rating-portal](https://github.com/imAYUSH621/store-rating-portal)
+
 A full-stack web application enabling users to browse stores, review community ratings, and submit verified 1-to-5 star ratings. Built with **Express.js**, **React (Vite)**, and a dual **PostgreSQL / SQLite** database adapter.
 
 ---
