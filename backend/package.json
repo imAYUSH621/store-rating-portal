@@ -1,0 +1,21 @@
+{
+  "name": "store-rating-backend",
+  "version": "1.0.0",
+  "description": "Express API for Store Rating Portal with JWT auth and RBAC",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node src/db/seed.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1",
+    "sql.js": "^1.14.2"
+  }
+}
