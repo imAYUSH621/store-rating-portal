@@ -20,16 +20,26 @@ async function initSqlite() {
   const initSqlJs = require('sql.js');
   sqlJsInstance = await initSqlJs();
 
-  const dataDir = path.resolve(__dirname, '../../data');
+  const isVercel = !!process.env.VERCEL;
+  const dataDir = isVercel ? '/tmp' : path.resolve(__dirname, '../../data');
   if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
+    try {
+      fs.mkdirSync(dataDir, { recursive: true });
+    } catch {
+      // ignore read-only fs warnings if already exists
+    }
   }
 
   dbFilePath = path.join(dataDir, 'store_portal.sqlite');
+  const templatePath = path.resolve(__dirname, '../../data/store_portal.sqlite');
 
   if (fs.existsSync(dbFilePath)) {
     const fileBuffer = fs.readFileSync(dbFilePath);
     sqliteDb = new sqlJsInstance.Database(fileBuffer);
+  } else if (fs.existsSync(templatePath)) {
+    const fileBuffer = fs.readFileSync(templatePath);
+    sqliteDb = new sqlJsInstance.Database(fileBuffer);
+    persistSqlite();
   } else {
     sqliteDb = new sqlJsInstance.Database();
   }
