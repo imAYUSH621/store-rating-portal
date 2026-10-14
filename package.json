@@ -1,0 +1,25 @@
+{
+  "name": "store-rating-portal",
+  "version": "1.0.0",
+  "description": "Full-stack role-based store rating platform with Express.js, React, and PostgreSQL/SQLite",
+  "scripts": {
+    "install:backend": "npm --prefix backend install",
+    "install:frontend": "npm --prefix frontend install",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "seed": "npm --prefix backend run seed",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "start": "node start-dev.js"
+  },
+  "keywords": [
+    "express",
+    "react",
+    "postgresql",
+    "sqlite",
+    "jwt",
+    "rbac",
+    "store-rating"
+  ],
+  "author": "Ayush Anand",
+  "license": "ISC"
+}
