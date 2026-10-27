@@ -52,6 +52,7 @@ export default function AdminDashboard() {
     role: 'USER'
   });
   const [userError, setUserError] = useState('');
+  const [userFieldErrors, setUserFieldErrors] = useState({});
   const [userSubmitting, setUserSubmitting] = useState(false);
 
   const [loading, setLoading] = useState(false);
@@ -147,21 +148,57 @@ export default function AdminDashboard() {
       fetchStores();
       fetchStats();
     } catch (err) {
-      setStoreError(err.message || 'Failed to create store.');
+      const detailed = err.errors ? Object.values(err.errors).join(' ') : null;
+      setStoreError(detailed || err.message || 'Failed to create store.');
     } finally {
       setStoreSubmitting(false);
     }
+  };
+
+  // Quick helper to fill a compliant user
+  const handleFillSampleUser = () => {
+    setUserForm({
+      name: 'Alexander Harrison Montgomery',
+      email: `alex_${Math.floor(Math.random() * 8999 + 1000)}@storerating.com`,
+      role: 'STORE_OWNER',
+      password: 'SecurePass@2026',
+      address: '742 Evergreen Terrace, Administrative Block 4'
+    });
+    setUserFieldErrors({});
+    setUserError('');
   };
 
   // Submit Add User
   const handleAddUserSubmit = async (e) => {
     e.preventDefault();
     setUserError('');
+    setUserFieldErrors({});
+
+    const trimmedName = userForm.name.trim();
+    const errors = {};
+
+    if (trimmedName.length < 20 || trimmedName.length > 60) {
+      errors.name = 'Name must be between 20 and 60 characters long.';
+    }
+    if (userForm.password.length < 8 || userForm.password.length > 16) {
+      errors.password = 'Password must be between 8 and 16 characters long.';
+    } else if (!/[A-Z]/.test(userForm.password)) {
+      errors.password = 'Password must include at least one uppercase letter.';
+    } else if (!/[^A-Za-z0-9\s]/.test(userForm.password)) {
+      errors.password = 'Password must include at least one special character (!@#$...).';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setUserFieldErrors(errors);
+      setUserError(Object.values(errors).join(' '));
+      return;
+    }
+
     setUserSubmitting(true);
 
     try {
       await api.post('/admin/users', {
-        name: userForm.name.trim(),
+        name: trimmedName,
         email: userForm.email.trim(),
         address: userForm.address.trim(),
         password: userForm.password,
@@ -172,7 +209,11 @@ export default function AdminDashboard() {
       fetchUsers();
       fetchStats();
     } catch (err) {
-      setUserError(err.message || 'Failed to create user.');
+      const detailed = err.errors ? Object.values(err.errors).join(' ') : null;
+      setUserError(detailed || err.message || 'Failed to create user.');
+      if (err.errors) {
+        setUserFieldErrors(err.errors);
+      }
     } finally {
       setUserSubmitting(false);
     }
@@ -482,6 +523,17 @@ export default function AdminDashboard() {
       {/* ADD USER MODAL */}
       <Modal isOpen={isAddUserOpen} onClose={() => setIsAddUserOpen(false)} title="Create New Platform User">
         <form onSubmit={handleAddUserSubmit}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              style={{ fontSize: '0.775rem', padding: '4px 10px', color: '#4f46e5' }}
+              onClick={handleFillSampleUser}
+            >
+              Fill Sample Compliant User
+            </button>
+          </div>
+
           {userError && (
             <div style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '10px 14px', borderRadius: '8px', marginBottom: '16px', fontSize: '0.875rem', display: 'flex', gap: '8px', alignItems: 'center' }}>
               <AlertCircle size={18} />
@@ -496,7 +548,10 @@ export default function AdminDashboard() {
               className="form-input"
               placeholder="e.g. Christopher Montgomery Vance"
               value={userForm.name}
-              onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
+              onChange={(e) => {
+                setUserForm({ ...userForm, name: e.target.value });
+                if (userFieldErrors.name) setUserFieldErrors({ ...userFieldErrors, name: null });
+              }}
               required
             />
             <div className="form-hint">
@@ -505,6 +560,11 @@ export default function AdminDashboard() {
                 {userForm.name.length} / 60
               </span>
             </div>
+            {userFieldErrors.name && (
+              <div style={{ color: '#ef4444', fontSize: '0.825rem', marginTop: '4px' }}>
+                {userFieldErrors.name}
+              </div>
+            )}
           </div>
 
           <div className="form-group">
@@ -514,9 +574,17 @@ export default function AdminDashboard() {
               className="form-input"
               placeholder="user@example.com"
               value={userForm.email}
-              onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+              onChange={(e) => {
+                setUserForm({ ...userForm, email: e.target.value });
+                if (userFieldErrors.email) setUserFieldErrors({ ...userFieldErrors, email: null });
+              }}
               required
             />
+            {userFieldErrors.email && (
+              <div style={{ color: '#ef4444', fontSize: '0.825rem', marginTop: '4px' }}>
+                {userFieldErrors.email}
+              </div>
+            )}
           </div>
 
           <div className="form-group">
@@ -530,6 +598,11 @@ export default function AdminDashboard() {
               <option value="ADMIN">System Administrator</option>
               <option value="STORE_OWNER">Store Owner</option>
             </select>
+            {userFieldErrors.role && (
+              <div style={{ color: '#ef4444', fontSize: '0.825rem', marginTop: '4px' }}>
+                {userFieldErrors.role}
+              </div>
+            )}
           </div>
 
           <div className="form-group">
@@ -538,13 +611,35 @@ export default function AdminDashboard() {
               type="password"
               className="form-input"
               placeholder="8-16 chars, 1 uppercase, 1 special char"
+              maxLength={16}
               value={userForm.password}
-              onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+              onChange={(e) => {
+                setUserForm({ ...userForm, password: e.target.value });
+                if (userFieldErrors.password) setUserFieldErrors({ ...userFieldErrors, password: null });
+              }}
               required
             />
-            <div className="form-hint">
-              <span>8-16 chars, 1 uppercase, 1 special (!@#$...)</span>
+            <div className="form-hint" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '8px', fontSize: '0.75rem' }}>
+                <span style={{ color: userForm.password.length >= 8 && userForm.password.length <= 16 ? '#059669' : '#64748b' }}>
+                  {userForm.password.length >= 8 && userForm.password.length <= 16 ? '✓ 8-16 chars' : '• 8-16 chars'}
+                </span>
+                <span style={{ color: /[A-Z]/.test(userForm.password) ? '#059669' : '#64748b' }}>
+                  {/[A-Z]/.test(userForm.password) ? '✓ 1 Uppercase' : '• 1 Uppercase'}
+                </span>
+                <span style={{ color: /[^A-Za-z0-9\s]/.test(userForm.password) ? '#059669' : '#64748b' }}>
+                  {/[^A-Za-z0-9\s]/.test(userForm.password) ? '✓ 1 Special' : '• 1 Special'}
+                </span>
+              </div>
+              <span style={{ color: userForm.password.length >= 8 && userForm.password.length <= 16 ? '#059669' : '#ef4444' }}>
+                {userForm.password.length} / 16
+              </span>
             </div>
+            {userFieldErrors.password && (
+              <div style={{ color: '#ef4444', fontSize: '0.825rem', marginTop: '4px' }}>
+                {userFieldErrors.password}
+              </div>
+            )}
           </div>
 
           <div className="form-group">
@@ -554,10 +649,18 @@ export default function AdminDashboard() {
               rows={2}
               placeholder="Residential or business address"
               value={userForm.address}
-              onChange={(e) => setUserForm({ ...userForm, address: e.target.value })}
+              onChange={(e) => {
+                setUserForm({ ...userForm, address: e.target.value });
+                if (userFieldErrors.address) setUserFieldErrors({ ...userFieldErrors, address: null });
+              }}
               required
               maxLength={400}
             />
+            {userFieldErrors.address && (
+              <div style={{ color: '#ef4444', fontSize: '0.825rem', marginTop: '4px' }}>
+                {userFieldErrors.address}
+              </div>
+            )}
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '24px' }}>

@@ -4,7 +4,7 @@
  */
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const SPECIAL_CHAR_REGEX = /[!@#$%^&*(),.?":{}|<>_\-+=[\]/\\]/;
+const SPECIAL_CHAR_REGEX = /[^A-Za-z0-9\s]/;
 const UPPERCASE_REGEX = /[A-Z]/;
 
 function validateName(name) {
@@ -94,9 +94,10 @@ function validateUserRegistration(req, res, next) {
   }
 
   if (Object.keys(errors).length > 0) {
+    const errorDetails = Object.values(errors).join(' ');
     return res.status(400).json({
       success: false,
-      message: 'Validation failed.',
+      message: `Validation failed: ${errorDetails}`,
       errors
     });
   }
@@ -124,9 +125,10 @@ function validateStoreCreation(req, res, next) {
   if (addressError) errors.address = addressError;
 
   if (Object.keys(errors).length > 0) {
+    const errorDetails = Object.values(errors).join(' ');
     return res.status(400).json({
       success: false,
-      message: 'Validation failed.',
+      message: `Validation failed: ${errorDetails}`,
       errors
     });
   }
@@ -149,9 +151,10 @@ function validatePasswordUpdate(req, res, next) {
   if (newPassError) errors.newPassword = newPassError;
 
   if (Object.keys(errors).length > 0) {
+    const errorDetails = Object.values(errors).join(' ');
     return res.status(400).json({
       success: false,
-      message: 'Validation failed.',
+      message: `Validation failed: ${errorDetails}`,
       errors
     });
   }

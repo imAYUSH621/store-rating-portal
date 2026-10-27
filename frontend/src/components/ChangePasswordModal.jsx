@@ -16,7 +16,7 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
   // Password rules
   const hasLength = newPassword.length >= 8 && newPassword.length <= 16;
   const hasUpper = /[A-Z]/.test(newPassword);
-  const hasSpecial = /[!@#$%^&*(),.?":{}|<>_\-+=[\]/\\]/.test(newPassword);
+  const hasSpecial = /[^A-Za-z0-9\s]/.test(newPassword);
   const isMatch = newPassword === confirmPassword && newPassword.length > 0;
   const isValid = hasLength && hasUpper && hasSpecial && isMatch;
 
@@ -82,6 +82,7 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
           <input
             type="password"
             className="form-input"
+            maxLength={16}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             placeholder="8 to 16 characters"

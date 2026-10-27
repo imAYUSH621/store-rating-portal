@@ -23,7 +23,7 @@ export default function Signup() {
 
   const hasLength = password.length >= 8 && password.length <= 16;
   const hasUpper = /[A-Z]/.test(password);
-  const hasSpecial = /[!@#$%^&*(),.?":{}|<>_\-+=[\]/\\]/.test(password);
+  const hasSpecial = /[^A-Za-z0-9\s]/.test(password);
   const isPasswordValid = hasLength && hasUpper && hasSpecial;
 
   const handleSubmit = async (e) => {
@@ -171,6 +171,7 @@ export default function Signup() {
                 type="password"
                 className={`form-input ${fieldErrors.password ? 'has-error' : ''}`}
                 placeholder="8 to 16 characters"
+                maxLength={16}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
